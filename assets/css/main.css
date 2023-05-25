@@ -1,0 +1,21 @@
+/* Global */
+body {
+  min-height: 100vh;
+  background-image: url("../images/backgroubnd.jpg");
+  background-repeat: repeat-x;
+  background-size: auto 100vh;
+}
+
+/* Hero */
+.bird {
+  background-image: url("../images/bird-flying.webp");
+  width: 60px;
+  height: 50px;
+  background-position: center;
+  background-size: 95px 90px;
+  position: absolute;
+  top: 0;
+  left: 100px;
+
+  transition: top .3s linear, transform .3s linear;
+}
