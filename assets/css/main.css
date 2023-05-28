@@ -19,3 +19,15 @@ body {
 
   transition: top .3s linear, transform .3s linear;
 }
+
+/* Obstacle */
+.pipe {
+  height: 60%;
+  position: absolute;
+}
+.pipe img {
+  height: 100%;
+}
+.pipe.rotated img {
+  transform: rotate(180deg);
+}

@@ -1,5 +1,5 @@
 // Helpers
-import { numberToUnit, getRotateZFromTransform } from './helpers.js';
+import { numberToUnit, getRotateZFromTransform, createAndAppend } from './helpers.js';
 
 
 // Global
@@ -8,6 +8,11 @@ const app = {
     addEventListeners();
 
     goingDownBird();
+
+    createAndAppendPipe();
+    setInterval(() => {
+      createAndAppendPipe();
+    }, 3000);
   },
   sprites: {
     $bird: document.querySelector('.bird'),
@@ -17,6 +22,9 @@ const app = {
       fallenPosition: 0,
       rotatedPosition: 0,
     },
+    pipe: {
+      rightPosition: 0,
+    }
   },
 };
 
@@ -32,7 +40,7 @@ function goingDownBird() {
       app.spriteValues.bird.rotatedPosition += 1;
     }
 
-    app.spriteValues.bird.fallenPosition += 2;
+    app.spriteValues.bird.fallenPosition += 10;
   }, 100);
 }
 
@@ -42,13 +50,36 @@ function goingUpBird() {
   const top = parseInt($bird.style.top);
   const rotateZ = getRotateZFromTransform($bird.style.transform);
 
-  app.spriteValues.bird.fallenPosition = top - 25;
-  $bird.style.top = numberToUnit(top - 25);
+  app.spriteValues.bird.fallenPosition = top - 35;
+  $bird.style.top = numberToUnit(top - 35);
 
   if (rotateZ >= -30) {
-    app.spriteValues.bird.rotatedPosition = rotateZ - 15;
-    $bird.style.transform = `rotateZ(${numberToUnit(rotateZ - 15, 'deg')})`;
+    app.spriteValues.bird.rotatedPosition = rotateZ - 35;
+    $bird.style.transform = `rotateZ(${numberToUnit(rotateZ - 35, 'deg')})`;
   }
+}
+
+function createAndAppendPipe() {
+  const $pipeDown = createAndAppend('div', document.body, 'pipe');
+  $pipeDown.innerHTML = '<img src="./assets/images/pipe.png" alt="pipe">';
+
+  const $pipeUp = createAndAppend('div', document.body, 'pipe rotated');
+  $pipeUp.innerHTML = '<img src="./assets/images/pipe.png" alt="pipe">';
+
+  const pipeUpPoistion = Math.floor((Math.random() * 300) - 300);
+  $pipeUp.style.top = `${pipeUpPoistion}px`;
+
+  $pipeDown.style.top = `calc(100% - ${Math.abs(pipeUpPoistion - 175)}px)`;
+
+  $pipeDown.style.right = '-120px';
+  $pipeUp.style.right = '-120';
+
+  setInterval(() => {
+    const rightPosition = parseInt($pipeDown.style.right) + 1;
+    app.spriteValues.pipe.rightPosition++;
+    $pipeDown.style.right = `${rightPosition}px`;
+    $pipeUp.style.right = `${rightPosition}px`;
+  }, 10);
 }
 
 function addEventListeners() {

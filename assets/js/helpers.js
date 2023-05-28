@@ -9,3 +9,11 @@ export const getRotateZFromTransform = (trasnform = '') => {
   
   return parseFloat(rotateZSubtring.slice(startIndex, lastIndex));
 };
+
+export const createAndAppend = (element = 'div', $parent = document.body, className) => {
+  const $elem = document.createElement(element);
+  $elem.setAttribute('class', className);
+  $parent.appendChild($elem);
+
+  return $elem;
+};
