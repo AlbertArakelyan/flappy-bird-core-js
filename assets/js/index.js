@@ -1,5 +1,5 @@
 // Helpers
-import { numberToUnit, getRotateZFromTransform, createAndAppend } from './helpers.js';
+import { numberToUnit, getRotateZFromTransform, createAndAppend, getPipeY } from './helpers.js';
 
 
 // Global
@@ -10,9 +10,9 @@ const app = {
     goingDownBird();
 
     createAndAppendPipe();
-    setInterval(() => {
-      createAndAppendPipe();
-    }, 3000);
+    // setInterval(() => {
+    //   createAndAppendPipe();
+    // }, 3000);
   },
   sprites: {
     $bird: document.querySelector('.bird'),
@@ -22,13 +22,12 @@ const app = {
       fallenPosition: 0,
       rotatedPosition: 0,
     },
-    pipe: {
-      rightPosition: 0,
-    }
   },
 };
 
 // Game process functions
+
+/** Bird start */
 function goingDownBird() {
   const { $bird } = app.sprites;
 
@@ -58,7 +57,9 @@ function goingUpBird() {
     $bird.style.transform = `rotateZ(${numberToUnit(rotateZ - 35, 'deg')})`;
   }
 }
+/** Bird end */
 
+/** Pipe start */
 function createAndAppendPipe() {
   const $pipeDown = createAndAppend('div', document.body, 'pipe');
   $pipeDown.innerHTML = '<img src="./assets/images/pipe.png" alt="pipe">';
@@ -75,12 +76,45 @@ function createAndAppendPipe() {
   $pipeUp.style.right = '-120';
 
   setInterval(() => {
-    const rightPosition = parseInt($pipeDown.style.right) + 1;
-    app.spriteValues.pipe.rightPosition++;
-    $pipeDown.style.right = `${rightPosition}px`;
-    $pipeUp.style.right = `${rightPosition}px`;
+    movePipesToRight($pipeDown, $pipeUp);
+    detectPipePositionTowardsBird($pipeDown, $pipeUp);
   }, 10);
 }
+
+/**
+ * 
+ * @param {HTMLElement} $pipeDown 
+ * @param {HTMLElement} $pipeUp 
+ */
+function movePipesToRight($pipeDown, $pipeUp) {
+  const rightPosition = parseInt($pipeDown.style.right) + 1;
+  $pipeDown.style.right = `${rightPosition}px`;
+  $pipeUp.style.right = `${rightPosition}px`;
+}
+
+/**
+ * 
+ * @param {HTMLElement} $pipeDown 
+ * @param {HTMLElement} $pipeUp 
+ */
+function detectPipePositionTowardsBird($pipeDown, $pipeUp) {
+  for (const $pipe of [$pipeDown, $pipeUp]) {
+    const { $bird } = app.sprites;
+    const { x: birdX, y: birdY, height: birdHeight, width: birdWidth } = $bird.getBoundingClientRect();
+    const { x: pipeX, width: pipeWidth } = $pipe.getBoundingClientRect();
+    const pipeY = getPipeY($pipe);
+
+
+    const verticalCondition = $pipe.classList.contains('rotated') ?
+      pipeY >= birdY : 
+      pipeY <= birdY + birdHeight;
+
+    if (pipeX <= birdX + birdWidth && !(pipeX + pipeWidth <= birdX + birdWidth) && verticalCondition) {
+      alert('Game over');
+    }
+  }
+}
+/** Pipe end */
 
 function addEventListeners() {
   document.body.addEventListener('click', goingUpBird);
