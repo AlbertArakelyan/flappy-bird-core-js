@@ -18,16 +18,27 @@ body {
   left: 100px;
 
   transition: top .3s linear, transform .3s linear;
+  user-select: none;
 }
 
 /* Obstacle */
 .pipe {
   height: 60%;
   position: absolute;
+  user-select: none;
 }
 .pipe img {
   height: 100%;
 }
 .pipe.rotated img {
   transform: rotate(180deg);
+}
+
+/* Score */
+.score {
+  position: relative;
+  left: 10px;
+  top: 10px;
+  z-index: 10;
+  user-select: none;
 }

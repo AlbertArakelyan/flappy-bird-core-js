@@ -31,6 +31,7 @@ export const getRotateZFromTransform = (trasnform = '') => {
 export const createAndAppend = (element = 'div', $parent = document.body, className) => {
   const $elem = document.createElement(element);
   $elem.setAttribute('class', className);
+  $elem.style.right = '-120px';
   $parent.appendChild($elem);
 
   return $elem;

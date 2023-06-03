@@ -10,18 +10,29 @@ const app = {
     goingDownBird();
 
     createAndAppendPipe();
-    // setInterval(() => {
-    //   createAndAppendPipe();
-    // }, 3000);
+    this.spriteIntervals.createAndAppendPipeInterval = setInterval(() => {
+      createAndAppendPipe();
+    }, 3000);
   },
   sprites: {
     $bird: document.querySelector('.bird'),
+    $score: document.querySelector('.score'),
   },
   spriteValues: {
     bird: {
       fallenPosition: 0,
       rotatedPosition: 0,
+      isGameOver: false,
     },
+    score: {
+      value: 0,
+      isUpdated: false,
+    }
+  },
+  spriteIntervals: {
+    createAndAppendPipeInterval: undefined,
+    fallingInterval: undefined,
+    movingPipesIntervals: [],
   },
 };
 
@@ -31,7 +42,7 @@ const app = {
 function goingDownBird() {
   const { $bird } = app.sprites;
 
-  const fallingInterval = setInterval(() => {
+   app.spriteIntervals.fallingInterval = setInterval(() => {
     $bird.style.top = numberToUnit(app.spriteValues.bird.fallenPosition);
 
     if (app.spriteValues.bird.rotatedPosition <= 90) {
@@ -44,6 +55,10 @@ function goingDownBird() {
 }
 
 function goingUpBird() {
+  if (app.spriteValues.bird.isGameOver) {
+    return;
+  }
+
   const { $bird } = app.sprites;
 
   const top = parseInt($bird.style.top);
@@ -72,13 +87,12 @@ function createAndAppendPipe() {
 
   $pipeDown.style.top = `calc(100% - ${Math.abs(pipeUpPoistion - 175)}px)`;
 
-  $pipeDown.style.right = '-120px';
-  $pipeUp.style.right = '-120';
-
-  setInterval(() => {
+  const movingPipeInterval = setInterval(() => {
     movePipesToRight($pipeDown, $pipeUp);
     detectPipePositionTowardsBird($pipeDown, $pipeUp);
   }, 10);
+
+  app.spriteIntervals.movingPipesIntervals.push(movingPipeInterval);
 }
 
 /**
@@ -87,6 +101,10 @@ function createAndAppendPipe() {
  * @param {HTMLElement} $pipeUp 
  */
 function movePipesToRight($pipeDown, $pipeUp) {
+  if (parseInt($pipeDown.style.right) > window.innerWidth - 40) {
+    $pipeDown.remove();
+    $pipeUp.remove();
+  }
   const rightPosition = parseInt($pipeDown.style.right) + 1;
   $pipeDown.style.right = `${rightPosition}px`;
   $pipeUp.style.right = `${rightPosition}px`;
@@ -99,7 +117,7 @@ function movePipesToRight($pipeDown, $pipeUp) {
  */
 function detectPipePositionTowardsBird($pipeDown, $pipeUp) {
   for (const $pipe of [$pipeDown, $pipeUp]) {
-    const { $bird } = app.sprites;
+    const { $bird, $score } = app.sprites;
     const { x: birdX, y: birdY, height: birdHeight, width: birdWidth } = $bird.getBoundingClientRect();
     const { x: pipeX, width: pipeWidth } = $pipe.getBoundingClientRect();
     const pipeY = getPipeY($pipe);
@@ -110,11 +128,59 @@ function detectPipePositionTowardsBird($pipeDown, $pipeUp) {
       pipeY <= birdY + birdHeight;
 
     if (pipeX <= birdX + birdWidth && !(pipeX + pipeWidth <= birdX + birdWidth) && verticalCondition) {
-      alert('Game over');
+      clearInterval(app.spriteIntervals.fallingInterval);
+      clearInterval(app.spriteIntervals.createAndAppendPipeInterval);
+      app.spriteIntervals.movingPipesIntervals.forEach((movingPipeInterval) => {
+        clearInterval(movingPipeInterval);
+      });
+
+      const deathSound = new Howl({
+        src: ['./death-sound.mp3'],
+        volume: 1,
+        loop: false,
+      });
+      
+      deathSound.once('load', function() {
+        deathSound.play();
+      });
+
+      const top = parseInt($bird.style.top);
+      app.spriteValues.bird.fallenPosition = top - 75;
+      $bird.style.top = numberToUnit(top - 75);
+      app.spriteValues.bird.isGameOver = true;
+      setTimeout(() => {
+        $bird.style.top = '100%';
+      }, 300);
+
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
     }
+
+    if (pipeX <= birdX + birdWidth && !(pipeX + pipeWidth <= birdX + birdWidth)) {
+      // app.spriteValues.score.isUpdated = true;
+      app.spriteValues.score.value++;
+      $score.innerHTML = app.spriteValues.score.value;
+    }
+
+    // if (pipeX + pipeWidth <= birdX + 5 && app.spriteValues.score.isUpdated) {
+    //   app.spriteValues.score.isUpdated = false;
+    // }
   }
 }
 /** Pipe end */
+
+/** Background music start */
+const backgroundMusic = new Howl({
+  src: ['./super-mario-song.mp3'],
+  volume: 0.3,
+  loop: true,
+});
+
+backgroundMusic.once('load', function() {
+  backgroundMusic.play();
+});
+/** Background music end */
 
 function addEventListeners() {
   document.body.addEventListener('click', goingUpBird);
